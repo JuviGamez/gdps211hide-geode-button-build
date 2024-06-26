@@ -1,0 +1,42 @@
+name: Build Geode Mod
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up CMake
+      uses: actions/setup-cmake@v1
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y cmake g++ libcurl4-openssl-dev unzip
+
+    - name: Clone Geode SDK
+      run: |
+        git clone https://github.com/geode-sdk/geode.git geode-sdk
+
+    - name: Build Geode Mod
+      env:
+        GEODE_SDK: ${{ github.workspace }}/geode-sdk
+      run: |
+        mkdir build
+        cd build
+        cmake -DGEODE_SDK=${GEODE_SDK} ..
+        cmake --build .
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: geode-mod
+        path: build
